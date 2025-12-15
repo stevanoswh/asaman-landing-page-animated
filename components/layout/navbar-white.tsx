@@ -31,7 +31,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/#top" className="flex items-center gap-3">
           <Image
-            src="/asaman-logo.png"
+            src="/asaman-logo-for-white.png"
             alt="Asaman"
             width={115}
             height={49}
@@ -99,13 +99,13 @@ export function Navbar() {
           {/* Mobile: hamburger */}
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-full p-2 md:hidden bg-white/10 backdrop-blur-md"
+            className="inline-flex items-center justify-center rounded-full p-2 md:hidden bg-[#06748A]/10 backdrop-blur-md"
             onClick={() => setOpen((v) => !v)}
           >
             <span className="sr-only">Open main menu</span>
             <div className="space-y-1">
-              <span className="block h-[2px] w-5 bg-white" />
-              <span className="block h-[2px] w-5 bg-white" />
+              <span className="block h-[2px] w-5 bg-[#06748A]" />
+              <span className="block h-[2px] w-5 bg-[#06748A]" />
             </div>
           </button>
         </div>
