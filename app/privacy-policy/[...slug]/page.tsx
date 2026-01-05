@@ -4,7 +4,7 @@ import type { DocNode } from "@/lib/guides";
 import Link from "next/link";
 
 import HelpArticle from "@/app/privacy-policy/_components/article";
-import HelpSideNav from "@/app/privacy-policy/_components/side-nav"; // ✅ new
+import HelpSideNav from "@/app/privacy-policy/_components/side-nav";
 import { Navbar } from "@/components/layout/navbar";
 import { PrivacyPolicyHero } from "../_components/hero";
 
@@ -41,20 +41,27 @@ export async function generateStaticParams(): Promise<PageParams[]> {
 }
 
 /* --------------------------- Utilities ---------------------------------- */
-function flattenDocs(
-  nodes: DocNode[],
-  acc: Array<{ slug: string; title: string }> = []
-) {
+type FlatDoc = { slug: string; title: string };
+
+function flattenDocs(nodes: DocNode[], acc: FlatDoc[] = []): FlatDoc[] {
   for (const node of nodes) {
-    if (isDocument(node) && node.published) acc.push({ slug: node.slug, title: node.title });
-    else if (isFolder(node)) flattenDocs(node.children, acc);
+    if (isDocument(node) && node.published) {
+      acc.push({ slug: node.slug, title: node.title });
+    } else if (isFolder(node)) {
+      flattenDocs(node.children, acc);
+    }
   }
   return acc;
 }
 
-function findPath(nodes: DocNode[], targetSlug: string, path: DocNode[] = []) {
+function findPath(
+  nodes: DocNode[],
+  targetSlug: string,
+  path: DocNode[] = []
+): DocNode[] | null {
   for (const node of nodes) {
     if (isDocument(node) && node.slug === targetSlug) return [...path, node];
+
     if (isFolder(node)) {
       const res = findPath(node.children, targetSlug, [...path, node]);
       if (res) return res;
@@ -67,12 +74,14 @@ function findPath(nodes: DocNode[], targetSlug: string, path: DocNode[] = []) {
 export default async function HelpGuidesArticlePage({
   params,
 }: {
-  params: Promise<PageParams>;
+  params: PageParams;
 }) {
-  const { slug: slugArr } = await params;
-  const slug = slugArr.join("/");
+  const slug = params.slug.join("/");
 
-  const basePath = "/privacy-policy"; // ✅ single source of truth
+  // IMPORTANT:
+  // If this page route is /help-guides/[...slug], basePath should usually be "/help-guides".
+  // Keep "/privacy-policy" only if you intentionally want links/nav to point there.
+  const basePath = "/help-guides";
 
   const tree = buildTree();
   const doc = getDocBySlug(slug);
@@ -82,14 +91,14 @@ export default async function HelpGuidesArticlePage({
   const prev = idx > 0 ? docs[idx - 1] : null;
   const next = idx >= 0 && idx < docs.length - 1 ? docs[idx + 1] : null;
 
-  const path = findPath(tree, slug) || [];
-  const lastFolder = [...path].reverse().find((n) => n.type === "folder");
+  const path = findPath(tree, slug) ?? [];
+  const lastFolder = [...path].reverse().find(isFolder);
   const sectionTitle = lastFolder?.title ?? null;
 
   return (
     <div>
       <Navbar />
-      <PrivacyPolicyHero/>
+      <PrivacyPolicyHero />
 
       <section className="bg-white py-14">
         <div className="mx-auto max-w-6xl px-6">
@@ -101,7 +110,9 @@ export default async function HelpGuidesArticlePage({
             <div>
               {sectionTitle && (
                 <div className="mb-4">
-                  <h1 className="text-3xl font-bold text-slate-900">{sectionTitle}</h1>
+                  <h1 className="text-3xl font-bold text-slate-900">
+                    {sectionTitle}
+                  </h1>
                   <div className="mt-3 h-px bg-slate-300" />
                 </div>
               )}
