@@ -10,7 +10,7 @@ const infoLinks = ["Privacy Policy", "Terms & Condition"];
 
 // mapping route untuk item yang kamu minta
 const ROUTES: Record<string, string> = {
-  "Privacy Policy": "/privacy-policy",
+  "Privacy Policy": "/privacy-policy/1-terms-of-services",
   "Terms & Condition": "/terms-condition",
 };
 

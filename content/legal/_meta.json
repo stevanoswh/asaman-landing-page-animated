@@ -1,0 +1,17 @@
+{
+  "items": {
+    "1-terms-of-services": { "title": "Terms of Services", "sort": 1 },
+    "2-global-privacy-policy": { "title": "Global Privacy Policy", "sort": 2 },
+    "3-data-processing-agreement": { "title": "Data Processing Agreement", "sort": 3 },
+    "4-cookies-and-tracking-policy": { "title": "Cookies And Tracking Policy", "sort": 4 },
+    "5-acceptable-use-policy-aup": { "title": "Acceptable Use Policy (AUP)", "sort": 5 },
+    "6-ai-and-safeguarding-statement": { "title": "AI And Safeguarding Statement", "sort": 6 },
+    "7-data-protection-and-security-overview": { "title": "Data Protection And Security Overview", "sort": 7 },
+    "8-data-retention-and-off-boarding-policy": { "title": "Data Retention And Off-Boarding Policy", "sort": 8 },
+    "9-parental-consent-and-minor-data-notice": { "title": "Parental Consent And Minor Data Notice", "sort": 9 },
+    "10-asaman-data-and-privacy-governance-framework": {
+      "title": "Asaman Data And Privacy Governance Framework",
+      "sort": 10
+    }
+  }
+}
