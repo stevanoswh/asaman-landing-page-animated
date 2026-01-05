@@ -10,7 +10,6 @@ import { PrivacyPolicyHero } from "@/app/privacy-policy/_components/hero";
 
 export const dynamic = "force-static";
 export const revalidate = false;
-// (optional but nice) ensures only params from generateStaticParams are valid
 export const dynamicParams = false;
 
 /* ----------------------------- Type guards ------------------------------ */
@@ -33,7 +32,7 @@ export async function generateStaticParams(): Promise<PageParams[]> {
 
   const walk = (nodes: DocNode[]) => {
     for (const node of nodes) {
-      if (isDocument(node) && node.published) slugs.push(node.slug);
+      if (isDocument(node) && node.published && node.slug) slugs.push(node.slug);
       else if (isFolder(node)) walk(node.children);
     }
   };
@@ -47,11 +46,8 @@ type FlatDoc = { slug: string; title: string };
 
 function flattenDocs(nodes: DocNode[], acc: FlatDoc[] = []): FlatDoc[] {
   for (const node of nodes) {
-    if (isDocument(node) && node.published) {
-      acc.push({ slug: node.slug, title: node.title });
-    } else if (isFolder(node)) {
-      flattenDocs(node.children, acc);
-    }
+    if (isDocument(node) && node.published) acc.push({ slug: node.slug, title: node.title });
+    else if (isFolder(node)) flattenDocs(node.children, acc);
   }
   return acc;
 }
@@ -63,7 +59,6 @@ function findPath(
 ): DocNode[] | null {
   for (const node of nodes) {
     if (isDocument(node) && node.slug === targetSlug) return [...path, node];
-
     if (isFolder(node)) {
       const res = findPath(node.children, targetSlug, [...path, node]);
       if (res) return res;
@@ -73,26 +68,26 @@ function findPath(
 }
 
 /* ------------------------------ Page ------------------------------------ */
-export default function PrivacyPolicyArticlePage({
+// ✅ Next 15+: params adalah Promise
+export default async function PrivacyPolicyArticlePage({
   params,
 }: {
-  params: { slug?: string[] };
+  params: Promise<PageParams>;
 }) {
-  // ✅ Defensive: avoid "cannot read join"
-  const slugArr = Array.isArray(params?.slug) ? params.slug : [];
+  const { slug: slugArr } = await params; // ✅ penting!
   const slug = slugArr.join("/");
 
   const basePath = "/privacy-policy";
 
   const tree = buildTree();
-  const doc = slug ? getDocBySlug(slug) : null;
+  const doc = getDocBySlug(slug);
 
   const docs = flattenDocs(tree);
   const idx = docs.findIndex((d) => d.slug === slug);
   const prev = idx > 0 ? docs[idx - 1] : null;
   const next = idx >= 0 && idx < docs.length - 1 ? docs[idx + 1] : null;
 
-  const path = slug ? findPath(tree, slug) ?? [] : [];
+  const path = findPath(tree, slug) ?? [];
   const lastFolder = [...path].reverse().find(isFolder);
   const sectionTitle = lastFolder?.title ?? null;
 
@@ -111,9 +106,7 @@ export default function PrivacyPolicyArticlePage({
             <div>
               {sectionTitle && (
                 <div className="mb-4">
-                  <h1 className="text-3xl font-bold text-slate-900">
-                    {sectionTitle}
-                  </h1>
+                  <h1 className="text-3xl font-bold text-slate-900">{sectionTitle}</h1>
                   <div className="mt-3 h-px bg-slate-300" />
                 </div>
               )}
@@ -156,8 +149,7 @@ export default function PrivacyPolicyArticlePage({
                 </>
               ) : (
                 <div className="rounded-xl border border-slate-200 bg-white p-6">
-                  Document not found. Ensure the file exists and is published for{" "}
-                  <code>{slug || "(missing slug)"}</code>.
+                  Document not found: <code>{slug}</code>
                 </div>
               )}
             </div>
