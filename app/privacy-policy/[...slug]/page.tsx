@@ -1,4 +1,4 @@
-// app/help-guides/[...slug]/page.tsx
+// app/privacy-policy/[...slug]/page.tsx
 import { buildTree, getDocBySlug } from "@/lib/guides";
 import type { DocNode } from "@/lib/guides";
 import Link from "next/link";
@@ -6,10 +6,12 @@ import Link from "next/link";
 import HelpArticle from "@/app/privacy-policy/_components/article";
 import HelpSideNav from "@/app/privacy-policy/_components/side-nav";
 import { Navbar } from "@/components/layout/navbar";
-import { PrivacyPolicyHero } from "../_components/hero";
+import { PrivacyPolicyHero } from "@/app/privacy-policy/_components/hero";
 
 export const dynamic = "force-static";
 export const revalidate = false;
+// (optional but nice) ensures only params from generateStaticParams are valid
+export const dynamicParams = false;
 
 /* ----------------------------- Type guards ------------------------------ */
 type FolderNode = Extract<DocNode, { type: "folder" }>;
@@ -71,27 +73,26 @@ function findPath(
 }
 
 /* ------------------------------ Page ------------------------------------ */
-export default async function HelpGuidesArticlePage({
+export default function PrivacyPolicyArticlePage({
   params,
 }: {
-  params: PageParams;
+  params: { slug?: string[] };
 }) {
-  const slug = params.slug.join("/");
+  // ✅ Defensive: avoid "cannot read join"
+  const slugArr = Array.isArray(params?.slug) ? params.slug : [];
+  const slug = slugArr.join("/");
 
-  // IMPORTANT:
-  // If this page route is /help-guides/[...slug], basePath should usually be "/help-guides".
-  // Keep "/privacy-policy" only if you intentionally want links/nav to point there.
-  const basePath = "/help-guides";
+  const basePath = "/privacy-policy";
 
   const tree = buildTree();
-  const doc = getDocBySlug(slug);
+  const doc = slug ? getDocBySlug(slug) : null;
 
   const docs = flattenDocs(tree);
   const idx = docs.findIndex((d) => d.slug === slug);
   const prev = idx > 0 ? docs[idx - 1] : null;
   const next = idx >= 0 && idx < docs.length - 1 ? docs[idx + 1] : null;
 
-  const path = findPath(tree, slug) ?? [];
+  const path = slug ? findPath(tree, slug) ?? [] : [];
   const lastFolder = [...path].reverse().find(isFolder);
   const sectionTitle = lastFolder?.title ?? null;
 
@@ -155,8 +156,8 @@ export default async function HelpGuidesArticlePage({
                 </>
               ) : (
                 <div className="rounded-xl border border-slate-200 bg-white p-6">
-                  Document not found. Ensure the file exists under{" "}
-                  <code>/content/legal/{slug}.mdx</code>.
+                  Document not found. Ensure the file exists and is published for{" "}
+                  <code>{slug || "(missing slug)"}</code>.
                 </div>
               )}
             </div>
